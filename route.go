@@ -90,45 +90,61 @@ func (r *Route) save() {
 
 // Match check if the request match the route Pattern
 func (r *Route) Match(req *http.Request) bool {
+	sub := false
 	ss := strings.Split(req.URL.Path, "/")
 	if len(ss) == r.Token.Size || r.wildCard {
 		if r.wildCard && r.wildPos == 0 {
+			sub = true
 			rst := len(req.RequestURI) - len(r.Path[1:])
-			if rst > 0 && r.Path[1:] == req.RequestURI[rst:] {
-				return true
+			if rst > 0 {
+				ss = strings.Split(req.RequestURI[rst:], "/")
+				if r.Path[1:] != req.RequestURI[rst:] && !r.Params {
+					return false
+				}
 			}
-			return false
 		}
 		for i, v := range r.Token.raw {
 			if ss[v] != r.Token.Tokens[v] {
 				if r.wildCard && i == r.wildPos {
-					return true
-				}
-				return false
-			}
-		}
-		vars.Lock()
-		vars.m[req] = map[string]string{}
-		vars.Unlock()
-		if r.Regex {
-			for k, v := range r.Compile {
-				if v.MatchString(ss[k]) {
-					vars.Lock()
-					vars.m[req][r.Tag[k]] = ss[k]
-					vars.Unlock()
+					if i != 0 {
+						return true
+					}
 				} else {
 					return false
 				}
 			}
 		}
-		for k, v := range r.Pattern {
-			vars.Lock()
-			vars.m[req][v] = ss[k]
-			vars.Unlock()
-		}
-		return true
+
+		return r.parseParams(req, ss, sub)
 	}
 	return false
+}
+
+func (r *Route) parseParams(req *http.Request, ss []string, sub bool) bool {
+	vars.Lock()
+	vars.m[req] = map[string]string{}
+	vars.Unlock()
+	if r.Regex {
+		for k, v := range r.Compile {
+			if v.MatchString(ss[k]) {
+				vars.Lock()
+				vars.m[req][r.Tag[k]] = ss[k]
+				vars.Unlock()
+			} else {
+				return false
+			}
+		}
+	}
+	for k, v := range r.Pattern {
+		vars.Lock()
+		if sub {
+			vars.m[req][v] = ss[k-1]
+		} else {
+			vars.m[req][v] = ss[k]
+		}
+		vars.Unlock()
+	}
+	return true
 }
 
 // Get set the route method to Get

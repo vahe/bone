@@ -7,7 +7,10 @@
 
 package bone
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 // Handle when a request does not match a registered handler.
 func (m *Mux) HandleNotFound(rw http.ResponseWriter, req *http.Request) {
@@ -37,6 +40,12 @@ func valid(path string) bool {
 		return false
 	}
 	return true
+}
+
+func (r *Route) routeInfo() {
+	fmt.Printf("Route Path: %s\n", r.Path)
+	fmt.Printf("Route Tokens: %s\n", r.Token.Tokens)
+	fmt.Println("Route Vars:", r.Pattern)
 }
 
 // Check if the request path is for Static route

@@ -318,13 +318,12 @@ func TestWildCard(t *testing.T) {
 	}
 }
 
-/*
 func TestSubRouter(t *testing.T) {
 	valid := false
 	router := New()
 	mux := New()
 
-	mux.GetFunc("/test", func(rw http.ResponseWriter, req *http.Request) {
+	mux.GetFunc("*/test", func(rw http.ResponseWriter, req *http.Request) {
 		valid = true
 	})
 
@@ -342,4 +341,28 @@ func TestSubRouter(t *testing.T) {
 		t.Error("sub route doesn't work !")
 	}
 }
-*/
+
+// func TestSubRouterArg(t *testing.T) {
+// 	value := ""
+// 	router := New()
+// 	mux := New()
+//
+// 	mux.GetFunc("*/test/:value", func(rw http.ResponseWriter, req *http.Request) {
+// 		value = GetValue(req, "value")
+// 	})
+//
+// 	req, err := http.NewRequest("GET", "/index/test/true", nil)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+// 	rw := httptest.NewRecorder()
+//
+// 	router.Get("/index/*", mux)
+//
+// 	router.ServeHTTP(rw, req)
+// 	t.Log("arg =", value)
+//
+// 	if value != "true" {
+// 		t.Error("sub route arg doesn't work !")
+// 	}
+// }

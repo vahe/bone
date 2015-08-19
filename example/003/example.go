@@ -9,20 +9,24 @@ import (
 
 var (
 	router = bone.New()
-	muxx   = bone.New()
 )
 
+func Generate() *bone.Mux {
+	muxx := bone.New()
+
+	muxx.GetFunc("*/test/:val", TestHandler)
+
+	return muxx
+}
+
 func main() {
-	muxx.GetFunc("*/test", TestHandler)
-
-	muxx.GetFunc("*/main", TestHandler)
-
-	router.Handle("/index/*", muxx)
+	router.Handle("/index/*", Generate())
 
 	http.ListenAndServe(":8080", router)
 }
 
 func TestHandler(rw http.ResponseWriter, req *http.Request) {
 	fmt.Println(req.RequestURI)
-	rw.Write([]byte(req.RequestURI))
+	fmt.Println(bone.GetValue(req, "val"))
+	rw.Write([]byte(bone.GetValue(req, "val")))
 }
